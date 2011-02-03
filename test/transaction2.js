@@ -5,21 +5,23 @@ var EventEmitter = require("events").EventEmitter;
 
 var mongodm = require("../index");
 
-var testContext = {};
+var testContext = {
+	dbfacade: null
+};
 
 vows.describe("simple transaction with deep nested object properties")
 .addBatch({
-	'open dbclient': {
+	'withDatabase testdb': {
 		topic:function(){
 			var promise = new EventEmitter();
-			mongodm.createClient("testdb",function(err,dbclient){
-						promise.emit("success",err,dbclient);
+			mongodm.withDatabase("testdb",function(err,dbfacade){
+						promise.emit("success",err,dbfacade);
 					});
 			return promise;
 		},
 		'dbclient should be created': function(){
 			assert.isNull(arguments[0]);
-			testContext.dbclient = arguments[1];
+			testContext.dbfacade = arguments[1];
 		}
 	}
 })
@@ -31,7 +33,7 @@ vows.describe("simple transaction with deep nested object properties")
 			
 			var collectionName = 'testDocuments'+Math.round(Math.random()*1000);
 			testContext.collectionName = collectionName;
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
@@ -58,7 +60,7 @@ vows.describe("simple transaction with deep nested object properties")
 		topic: function(){
 			var promise = new EventEmitter();
 			testContext.obj.nested.deeply.under.the.sea = "found";
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.save(testContext.obj, function(err,doc){
 					promise.emit("success", err, doc);
@@ -76,7 +78,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'count documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
@@ -94,7 +96,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'find documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.find({nested:{deeply:{under:{the:{sea:'found'}}}}}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -118,7 +120,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'remove document in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.obj._id}, function(err, doc){
 					promise.emit("success", err, doc);
@@ -134,7 +136,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'find documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.find({nested:{deeply:{under:{the:{sea:'found'}}}}}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -155,8 +157,9 @@ vows.describe("simple transaction with deep nested object properties")
 	'drop collection': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
-				.dropCollection(testContext.collectionName, function(err){
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.drop(function(err){
 					promise.emit("success", err);
 				});
 			return promise;
@@ -167,10 +170,10 @@ vows.describe("simple transaction with deep nested object properties")
 	}
 })
 .addBatch({
-	'close dbclient': {
+	'drop & close database testdb': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbclient.close(function(err){
+			testContext.dbfacade.drop(function(err){
 				promise.emit("success",err);
 			});
 			return promise;

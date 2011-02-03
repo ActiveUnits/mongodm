@@ -1,7 +1,20 @@
-var DBClient = require("./lib/dbclient");
+var mongo = require("mongodb");
+var fargs = require("./lib/utils/function").fargs;
+var DatabaseFacade = require("./lib/DatabaseFacade");
 
-exports.createClient = function(dbname, host, port, callback) {
-	var dbclient = new DBClient();
-	dbclient.open(dbname, host, port, callback);
-	return dbclient;
+exports.withDatabase = function(dbname, host, port, callback) {
+	fargs(arguments)
+		.required(new Error("dbname required"))
+		.skipAsValue("localhost")
+		.skipAsValue(27017)
+		.skipAsFunction(null);
+	
+	var db = new mongo.Db(dbname, new mongo.Server(host, port, {}));
+	db.open(function(){
+		if(callback != null)
+			callback(null, new DatabaseFacade(db));
+	});
+	db.on("error", function(err){
+		callback(err,null);
+	});
 };

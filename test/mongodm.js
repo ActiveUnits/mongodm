@@ -3,19 +3,19 @@ var vows = require("vows");
 var assert = require('assert');
 var EventEmitter = require("events").EventEmitter;
 
-var mongodm = require("../index");
+var mongodb = require("../index");
 
 var testContext = {
-	dbclient: null
+	dbfacade: null
 };
 
 vows.describe("mongodm")
 .addBatch({
-	'connect testdb':{
+	'withDatabase testdb':{
 		topic:function(){
 			var promise = new EventEmitter();
-			mongodm.createClient("testdb",function(err, dbclient){
-				promise.emit("success", err, dbclient);
+			mongodb.withDatabase("testdb", function(err, dbfacade){
+				promise.emit("success", err, dbfacade);
 			});
 			return promise;
 		},
@@ -23,23 +23,24 @@ vows.describe("mongodm")
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
 			assert.isObject(arguments[1].db);
-			testContext.dbclient = arguments[1];
+			testContext.dbfacade = arguments[1];
 		}
 	}
 })
 .addBatch({
-	'disconnect testdb':{
+	'drop & disconnect testdb':{
 		topic:function(){
 			var promise = new EventEmitter();
-			testContext.dbclient.close(function(err){
+			testContext.dbfacade.drop(function(err){
 				promise.emit("success", err);
 			});
 			return promise;
 		},
 		'should close connection without error': function(){
 			assert.isNull(arguments[0]);
-			assert.isNull(testContext.dbclient.db);
-			testContext.dbclient = null;
+			assert.isNotNull(testContext.dbfacade.db);
+			testContext.dbfacade = null;
 		}
 	}
-}).export(module);
+})
+.export(module);

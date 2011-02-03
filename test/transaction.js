@@ -5,21 +5,25 @@ var EventEmitter = require("events").EventEmitter;
 
 var mongodm = require("../index");
 
-var testContext = {};
+var testContext = {
+	dbfacade: null,
+	collectionName: 'testDocuments'+Math.round(Math.random()*1000),
+	obj: {a:2}
+};
 
 vows.describe("simple transaction")
 .addBatch({
-	'open dbclient': {
+	'withDatabase testdb': {
 		topic:function(){
 			var promise = new EventEmitter();
-			mongodm.createClient("testdb",function(err,dbclient){
-						promise.emit("success",err,dbclient);
+			mongodm.withDatabase("testdb",function(err,dbfacade){
+						promise.emit("success",err,dbfacade);
 					});
 			return promise;
 		},
 		'dbclient should be created': function(){
 			assert.isNull(arguments[0]);
-			testContext.dbclient = arguments[1];
+			testContext.dbfacade = arguments[1];
 		}
 	}
 })
@@ -29,13 +33,11 @@ vows.describe("simple transaction")
 			var promise = new EventEmitter();
 			var promiseResult = {};
 			
-			var collectionName = 'testDocuments'+Math.round(Math.random()*1000);
-			testContext.collectionName = collectionName;
-			testContext.dbclient
-				.withCollection(collectionName, function(err, collection){
+			testContext.dbfacade
+				.withCollection(testContext.collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
-				.save({a:2}, function(err,doc){
+				.save(testContext.obj, function(err,doc){
 					promiseResult.insertResult = {err: err, doc: doc};
 					promise.emit("success", promiseResult);
 				});
@@ -45,9 +47,10 @@ vows.describe("simple transaction")
 			assert.isNull(result.withCollectionResult.err);
 			assert.isObject(result.withCollectionResult.collection);
 		},
-		'should return insert result': function(result){
+		'should return save result with _id property': function(result){
 			assert.isNull(result.insertResult.err);
 			assert.isObject(result.insertResult.doc);
+			assert.isObject(result.insertResult.doc._id);
 			
 			testContext.obj = result.insertResult.doc;
 		}
@@ -57,18 +60,22 @@ vows.describe("simple transaction")
 	'save/update last inserted document in last created collection': {
 		topic: function(){
 			var promise = new EventEmitter();
+			
 			testContext.obj.a = "updated";
-			testContext.dbclient
+			
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.save(testContext.obj, function(err,doc){
 					promise.emit("success", err, doc);
 				});
+			
 			return promise;
 		},
-		'should return update result': function(){
+		'should return update result with updated a property and _id': function(){
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
-			assert.equal(arguments[1].a,"updated");
+			assert.equal(arguments[1].a, testContext.obj.a);
+			assert.isObject(arguments[1]._id);
 		}
 	}
 })
@@ -76,11 +83,13 @@ vows.describe("simple transaction")
 	'count documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
 				});
+			
 			return promise;
 		},
 		'should return count result': function(){
@@ -94,11 +103,13 @@ vows.describe("simple transaction")
 	'find documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
 				});
+			
 			return promise;
 		},
 		'should return find result': function(){
@@ -108,9 +119,32 @@ vows.describe("simple transaction")
 				assert.isNull(err);
 				assert.equal(results.length, 1);
 				assert.isObject(results[0]);
-				assert.equal(results[0].a,"updated");
+				assert.equal(results[0].a, testContext.obj.a);
 				assert.equal(results[0]._id.id, testContext.obj._id.id);
 			});
+		}
+	}
+})
+.addBatch({
+	'search documents in last created collection': {
+		topic : function(){
+			var promise = new EventEmitter();
+			
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.search({a: 'updated'}, function(err, results){
+					promise.emit("success", err, results);
+				});
+			
+			return promise;
+		},
+		'should return search result': function(){
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.equal(arguments[1].length, 1);
+			assert.isObject(arguments[1][0]);
+			assert.equal(arguments[1][0].a, testContext.obj.a);
+			assert.equal(arguments[1][0]._id.id, testContext.obj._id.id);
 		}
 	}
 })
@@ -118,7 +152,7 @@ vows.describe("simple transaction")
 	'remove document in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.obj._id}, function(err, doc){
 					promise.emit("success", err, doc);
@@ -134,7 +168,7 @@ vows.describe("simple transaction")
 	'find documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
+			testContext.dbfacade
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -152,11 +186,30 @@ vows.describe("simple transaction")
 	}
 })
 .addBatch({
+	'search documents in last created collection': {
+		topic : function(){
+			var promise = new EventEmitter();
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.search({a: 'updated'}, function(err, results){
+					promise.emit("success", err, results);
+				});
+			return promise;
+		},
+		'should return search result': function(){
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.equal(arguments[1].length, 0);
+		}
+	}
+})
+.addBatch({
 	'drop collection': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbclient
-				.dropCollection(testContext.collectionName, function(err){
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.drop(function(err){
 					promise.emit("success", err);
 				});
 			return promise;
@@ -167,15 +220,16 @@ vows.describe("simple transaction")
 	}
 })
 .addBatch({
-	'close dbclient': {
+	'drop & close database': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbclient.close(function(err){
-				promise.emit("success",err);
-			});
+			testContext.dbfacade
+				.drop(function(err){
+					promise.emit("success", err);
+				});
 			return promise;
 		},
-		'dbclient should be closed':function(){
+		'should return dropped collection result': function() {
 			assert.isNull(arguments[0]);
 		}
 	}
