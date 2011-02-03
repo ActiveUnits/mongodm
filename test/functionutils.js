@@ -32,7 +32,7 @@ var f2 = function(arg1, arg2, arg3) {
 	return [arg1, arg2, arg3];
 };
 
-var f3 = function(arg1) {
+var f3 = function(arg1,arg2) {
 	fargs(arguments)
 		.mixValueWith(function(value){
 			if(value == null)
@@ -42,6 +42,20 @@ var f3 = function(arg1) {
 		});
 	
 	return [arg1];
+};
+
+var f4 = function(arg1,arg2,arg3) {
+	fargs(arguments)
+		.required(new Error("arg1 required"))
+		.mixValueWith(function(value){
+			if(value == null)
+				value = {};
+			value['augmented'] = true;
+			return value;
+		})
+		.skipAsFunction(undefined);
+	
+	return [arg1,arg2,arg3];
 };
 
 vows.describe("function")
@@ -175,6 +189,23 @@ vows.describe("function")
 			assert.isArray(array);
 			assert.isTrue(array[0]['something']);
 			assert.isTrue(array[0]['augmented']);
+		}
+	}
+})
+.addBatch({
+	'test f4 with required argument and callback func': {
+		topic : function() {
+			return f4("arg1", function(){ return "arg2"; });
+		},
+		'should return valid arguments array':function(array) {
+			assert.isArray(array);
+			assert.isString(array[0]);
+			assert.equal(array[0], "arg1");
+			
+			assert.isObject(array[1]);
+			assert.isTrue(array[1]['augmented']);
+			
+			assert.isFunction(array[2]);
 		}
 	}
 })

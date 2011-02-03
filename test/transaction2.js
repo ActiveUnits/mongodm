@@ -105,14 +105,11 @@ vows.describe("simple transaction with deep nested object properties")
 		},
 		'should return find result': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
-			arguments[1].toArray(function(err, results){
-				assert.isNull(err);
-				assert.equal(results.length, 1);
-				assert.isObject(results[0]);
-				assert.equal(results[0].nested.deeply.under.the.sea,"found");
-				assert.equal(results[0]._id.id, testContext.obj._id.id);
-			});
+			assert.isArray(arguments[1]);
+			assert.equal(arguments[1].length, 1);
+			assert.isObject(arguments[1][0]);
+			assert.equal(arguments[1][0].nested.deeply.under.the.sea,"found");
+			assert.equal(arguments[1][0]._id.id, testContext.obj._id.id);
 		}
 	}
 })
@@ -145,11 +142,8 @@ vows.describe("simple transaction with deep nested object properties")
 		},
 		'should return find result': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
-			arguments[1].toArray(function(err, results){
-				assert.isNull(err);
-				assert.equal(results.length, 0);
-			});
+			assert.isArray(arguments[1]);
+			assert.equal(arguments[1].length, 0);
 		}
 	}
 })

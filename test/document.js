@@ -1,6 +1,7 @@
 var sys = require("sys");
 var vows = require("vows");
 var assert = require('assert');
+var EventEmitter = require("events").EventEmitter;
 
 var mongodm = require("../index");
 
@@ -11,8 +12,8 @@ var testContext = {
 	lastCreatedObject: null
 };
 
-var userDefinition = {
-	schema: {
+var UserDocumentDefinition = {
+	fields: {
 		username: "",
 		password: "",
 		createdAt: null,
@@ -27,25 +28,7 @@ var userDefinition = {
 		}
 	},
 	
-	on: {
-		save: function() {
-			if(this.createdAt == null)
-				this.createdAt = new Date();
-			
-			testContext.lastCreatedObject = this;
-		},
-		remove : function() {
-			testContext.lastRemovedObject = this;
-		}
-	},
-	
 	methods: {
-		matchUsername : function(username) {
-			return this.username == username;
-		}
-	},
-	
-	static: {
 		findOneByUsername : function(username, callback) {
 			this.withCollection()
 					.findOne({username: username}, callback);
@@ -57,6 +40,25 @@ var userDefinition = {
 					.skip(offset)
 					.count(pattern)
 					.end(callback);
+		}
+	},
+	
+	instance: {
+		methods: {
+			matchUsername : function(username) {
+				return this.username == username;
+			}
+		},
+		on: {
+			save: function() {
+				if(this.createdAt == null)
+					this.createdAt = new Date();
+				
+				testContext.lastCreatedObject = this;
+			},
+			remove : function() {
+				testContext.lastRemovedObject = this;
+			}
 		}
 	}
 };
@@ -80,10 +82,10 @@ vows.describe("document modeling")
 .addBatch({
 	'define document model': {
 		topic: function(){
-			return dbfacade.defineModel("User", userDefinition);
+			return testContext.dbfacade.withDocument("User", UserDocumentDefinition);
 		},
 		'should return valid Document Object': function(Doc) {
-			assert.isObject(Doc);
+			assert.isFunction(Doc);
 			assert.isFunction(Doc.findOneByUsername);
 			assert.isFunction(Doc.countAndSearch);
 			assert.isFunction(Doc.withCollection);
@@ -94,16 +96,16 @@ vows.describe("document modeling")
 .addBatch({
 	'create document instance': {
 		topic: function(){
-			return new (dbfacade.model("User"));
+			return new (testContext.dbfacade.withDocument("User"));
 		},
 		'should return valid document instance': function(doc) {
 			assert.isObject(doc);
 			assert.isFunction(doc.save);
 			assert.isFunction(doc.remove);
-			assert.isString(doc.username);
-			assert.isString(doc.password);
+			assert.equal(doc.username, "");
+			assert.equal(doc.password, "");
 			assert.isNull(doc.createdAt);
-			assert.isString(doc.deeply.nested.property.value);
+			assert.equal(doc.deeply.nested.property.value, "default");
 		}
 	}
 })
@@ -112,12 +114,14 @@ vows.describe("document modeling")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			var user = new (dbfacade.model("User"));
+			var user = new (testContext.dbfacade.withDocument("User"));
 			user.username = "TestUser";
 			user.deeply.nested.property.value = "TEST"; 
 			user.save(function(err){
 				promise.emit("success", err);
 			});
+			
+			return promise;
 		},
 		'should not return error': function(err) {
 			assert.isNull(err);
@@ -130,9 +134,12 @@ vows.describe("document modeling")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			dbfacade.model("User").findOneByUsername("TestUser", function(err, user){
-				promise.emit("success", err, user);
-			});
+			testContext.dbfacade.withDocument("User")
+							.findOneByUsername("TestUser", function(err, user){
+								promise.emit("success", err, user);
+							});
+			
+			return promise;
 		},
 		'should not return error': function() {
 			assert.isNull(arguments[0]);
@@ -141,7 +148,7 @@ vows.describe("document modeling")
 			var user = arguments[1];
 			assert.isString(user.username);
 			assert.isString(user.password);
-			assert.isObject(user.createdAt);
+			assert.equal(typeof user.createdAt,"object");
 			assert.isString(user.deeply.nested.property.value);
 			assert.equal(user.deeply.nested.property.value, "TEST");
 		}
@@ -152,7 +159,7 @@ vows.describe("document modeling")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			dbfacade.model("User").withTransaction()
+			testContext.dbfacade.withDocument("User").withTransaction()
 								  .find({username: "TestUser"})
 								  .end(function(err, users){
 									  promise.emit("success", err, users);
@@ -167,7 +174,7 @@ vows.describe("document modeling")
 			var user = arguments[1][0];
 			assert.isString(user.username);
 			assert.isString(user.password);
-			assert.isObject(user.createdAt);
+			assert.equal(typeof user.createdAt,"object");
 			assert.isString(user.deeply.nested.property.value);
 			assert.equal(user.deeply.nested.property.value, "TEST");
 		}
@@ -178,7 +185,7 @@ vows.describe("document modeling")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			dbfacade.model("User").withCollection()
+			testContext.dbfacade.withDocument("User").withCollection()
 								  .find({username: "TestUser"},function(err, users){
 									  promise.emit("success", err, users);
 								  });
@@ -192,7 +199,7 @@ vows.describe("document modeling")
 			var user = arguments[1][0];
 			assert.isString(user.username);
 			assert.isString(user.password);
-			assert.isObject(user.createdAt);
+			assert.equal(typeof user.createdAt,"object");
 			assert.isString(user.deeply.nested.property.value);
 			assert.equal(user.deeply.nested.property.value, "TEST");
 		}

@@ -114,35 +114,8 @@ vows.describe("simple transaction")
 		},
 		'should return find result': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
-			arguments[1].toArray(function(err, results){
-				assert.isNull(err);
-				assert.equal(results.length, 1);
-				assert.isObject(results[0]);
-				assert.equal(results[0].a, testContext.obj.a);
-				assert.equal(results[0]._id.id, testContext.obj._id.id);
-			});
-		}
-	}
-})
-.addBatch({
-	'search documents in last created collection': {
-		topic : function(){
-			var promise = new EventEmitter();
-			
-			testContext.dbfacade
-				.withCollection(testContext.collectionName)
-				.search({a: 'updated'}, function(err, results){
-					promise.emit("success", err, results);
-				});
-			
-			return promise;
-		},
-		'should return search result': function(){
-			assert.isNull(arguments[0]);
 			assert.isArray(arguments[1]);
 			assert.equal(arguments[1].length, 1);
-			assert.isObject(arguments[1][0]);
 			assert.equal(arguments[1][0].a, testContext.obj.a);
 			assert.equal(arguments[1][0]._id.id, testContext.obj._id.id);
 		}
@@ -176,27 +149,6 @@ vows.describe("simple transaction")
 			return promise;
 		},
 		'should return find result': function(){
-			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
-			arguments[1].toArray(function(err, results){
-				assert.isNull(err);
-				assert.equal(results.length, 0);
-			});
-		}
-	}
-})
-.addBatch({
-	'search documents in last created collection': {
-		topic : function(){
-			var promise = new EventEmitter();
-			testContext.dbfacade
-				.withCollection(testContext.collectionName)
-				.search({a: 'updated'}, function(err, results){
-					promise.emit("success", err, results);
-				});
-			return promise;
-		},
-		'should return search result': function(){
 			assert.isNull(arguments[0]);
 			assert.isArray(arguments[1]);
 			assert.equal(arguments[1].length, 0);
