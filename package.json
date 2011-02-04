@@ -6,7 +6,7 @@
 , "keywords": [ "mongo", "mongodb", "nosql" ]
 , "directories":  { "lib": "./lib" }
 , "scripts": { "test": "vows ./test/*.js" }
-, "engines": { "node": ">= 2.5.0" }
+, "engines": { "node": ">= 2.0.0" }
 , "main": "./index"
 , "licenses": [ { "type": "The MIT License", "url": "http://www.opensource.org/licenses/mit-license.php" } ]
 }
