@@ -13,21 +13,6 @@ var testContext = {
 };
 
 var UserDocumentDefinition = {
-	fields: {
-		username: "",
-		password: "",
-		createdAt: null,
-		lastLoginDate: null,
-		deleted: false,
-		deeply: {
-			nested: {
-				property: {
-					value: "default"
-				}
-			}
-		}
-	},
-	
 	methods: {
 		findOneByUsername : function(username, callback) {
 			this.withCollection()
@@ -35,7 +20,7 @@ var UserDocumentDefinition = {
 		},
 		countAndSearch : function(pattern,limit,offset,callback) {
 			this.withTransaction()
-					.search(pattern)
+					.find(pattern)
 					.limit(limit)
 					.skip(offset)
 					.count(pattern)
@@ -44,6 +29,20 @@ var UserDocumentDefinition = {
 	},
 	
 	instance: {
+		fields: {
+			username: "",
+			password: "",
+			createdAt: null,
+			lastLoginDate: null,
+			deleted: false,
+			deeply: {
+				nested: {
+					property: {
+						value: "default"
+					}
+				}
+			}
+		},
 		methods: {
 			matchUsername : function(username) {
 				return this.username == username;
@@ -217,6 +216,93 @@ vows.describe("document modeling")
 		'should not return error':function(err) {
 			assert.isNull(err);
 			assert.isObject(testContext.lastRemovedObject);
+		}
+	}
+})
+.addBatch({
+	'count and search in simulated asynch way wave 1': {
+		topic: function(){
+			var promise = new EventEmitter();
+			
+			testContext.dbfacade.withDocument("User")
+								.countAndSearch({},1,0,function(err,results,total){
+									promise.emit("success", err, results, total);
+								});
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.isNumber(arguments[2]);
+		}
+	},
+	'count and search in simulated asynch way wave 2': {
+		topic: function(){
+			var promise = new EventEmitter();
+			
+			testContext.dbfacade.withDocument("User")
+								.countAndSearch({},1,0,function(err,results,total){
+									promise.emit("success", err, results, total);
+								});
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.isNumber(arguments[2]);
+		}
+	},
+	'create new document model & save to db': {
+		topic: function(){
+			var promise = new EventEmitter();
+			
+			var user = new (testContext.dbfacade.withDocument("User"));
+			user.username = "TestUser2";
+			user.deeply.nested.property.value = "TEST2"; 
+			user.save(function(err){
+				promise.emit("success", err);
+			});
+			
+			return promise;
+		},
+		'should not return error': function(err) {
+			assert.isNull(err);
+			assert.isObject(testContext.lastCreatedObject);
+		}
+	},
+	'count and search in simulated asynch way wave 3': {
+		topic: function(){
+			var promise = new EventEmitter();
+			
+			testContext.dbfacade.withDocument("User")
+								.countAndSearch({},1,0,function(err,results,total){
+									promise.emit("success", err, results, total);
+								});
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.isNumber(arguments[2]);
+		}
+	}
+})
+.addBatch({
+	'count and search': {
+		topic: function(){
+			var promise = new EventEmitter();
+			
+			testContext.dbfacade.withDocument("User")
+								.countAndSearch({},1,0,function(err,results,total){
+									promise.emit("success", err, results, total);
+								});
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.isNumber(arguments[2]);
+			assert.equal(arguments[2] != 0, true);
 		}
 	}
 })

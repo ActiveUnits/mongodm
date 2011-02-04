@@ -6,7 +6,8 @@ var EventEmitter = require("events").EventEmitter;
 var mongodm = require("../index");
 
 var testContext = {
-	dbfacade: null
+	dbfacade: null,
+	objID: null
 };
 
 vows.describe("simple transaction with deep nested object properties")
@@ -37,7 +38,7 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
-				.save({a:2,nested:{deeply:{under:{the:{sea:'tresure'}}}}}, function(err,doc){
+				.insert({a:2,nested:{deeply:{under:{the:{sea:'tresure'}}}}}, function(err,doc){
 					promiseResult.insertResult = {err: err, doc: doc};
 					promise.emit("success", promiseResult);
 				});
@@ -49,20 +50,22 @@ vows.describe("simple transaction with deep nested object properties")
 		},
 		'should return insert result': function(result){
 			assert.isNull(result.insertResult.err);
-			assert.isObject(result.insertResult.doc);
+			assert.isArray(result.insertResult.doc);
+			assert.equal(result.insertResult.doc.length, 1);
 			
-			testContext.obj = result.insertResult.doc;
+			testContext.objID = result.insertResult.doc[0]._id;
 		}
 	}
 })
 .addBatch({
-	'save/update last inserted document in last created collection': {
+	'update last inserted document in last created collection': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.obj.nested.deeply.under.the.sea = "found";
+			var obj = {nested:{deeply:{under:{the:{sea:"found"}}}}};
+			
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.save(testContext.obj, function(err,doc){
+				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
 					promise.emit("success", err, doc);
 				});
 			return promise;
@@ -70,7 +73,24 @@ vows.describe("simple transaction with deep nested object properties")
 		'should return update result': function(){
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
-			assert.equal(arguments[1].nested.deeply.under.the.sea,"found");
+		}
+	}
+})
+.addBatch({
+	'update last inserted document in last created collection only one field': {
+		topic: function(){
+			var promise = new EventEmitter();
+			var obj = {a: 43};
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
+					promise.emit("success", err, doc);
+				});
+			return promise;
+		},
+		'should return update result': function(){
+			assert.isNull(arguments[0]);
+			assert.isObject(arguments[1]);
 		}
 	}
 })
@@ -93,13 +113,13 @@ vows.describe("simple transaction with deep nested object properties")
 	}
 })
 .addBatch({
-	'find documents in last created collection': {
+	'find all documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.find({nested:{deeply:{under:{the:{sea:'found'}}}}}, function(err, cursor){
-					promise.emit("success", err, cursor);
+				.find({}, function(err, results){
+					promise.emit("success", err, results);
 				});
 			return promise;
 		},
@@ -109,7 +129,30 @@ vows.describe("simple transaction with deep nested object properties")
 			assert.equal(arguments[1].length, 1);
 			assert.isObject(arguments[1][0]);
 			assert.equal(arguments[1][0].nested.deeply.under.the.sea,"found");
-			assert.equal(arguments[1][0]._id.id, testContext.obj._id.id);
+			assert.equal(arguments[1][0]._id.id, testContext.objID.id);
+			assert.equal(arguments[1][0].a, 43);
+		}
+	}
+})
+.addBatch({
+	'find document by nested pattern in last created collection': {
+		topic : function(){
+			var promise = new EventEmitter();
+			testContext.dbfacade
+				.withCollection(testContext.collectionName)
+				.find({'nested.deeply.under.the.sea': "found"}, function(err, results){
+					promise.emit("success", err, results);
+				});
+			return promise;
+		},
+		'should return find result': function(){
+			assert.isNull(arguments[0]);
+			assert.isArray(arguments[1]);
+			assert.equal(arguments[1].length, 1);
+			assert.isObject(arguments[1][0]);
+			assert.equal(arguments[1][0].nested.deeply.under.the.sea,"found");
+			assert.equal(arguments[1][0]._id.id, testContext.objID.id);
+			assert.equal(arguments[1][0].a, 43);
 		}
 	}
 })
@@ -119,7 +162,7 @@ vows.describe("simple transaction with deep nested object properties")
 			var promise = new EventEmitter();
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.remove({_id: testContext.obj._id}, function(err, doc){
+				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
 				});
 			return promise;
@@ -130,12 +173,12 @@ vows.describe("simple transaction with deep nested object properties")
 	}
 })
 .addBatch({
-	'find documents in last created collection': {
+	'find document by nested pattern in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.find({nested:{deeply:{under:{the:{sea:'found'}}}}}, function(err, cursor){
+				.find({'nested.deeply.under.the.sea': "found"}, function(err, cursor){
 					promise.emit("success", err, cursor);
 				});
 			return promise;

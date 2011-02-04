@@ -8,7 +8,7 @@ var mongodm = require("../index");
 var testContext = {
 	dbfacade: null,
 	collectionName: 'testDocuments'+Math.round(Math.random()*1000),
-	obj: {a:2}
+	objID: null
 };
 
 vows.describe("simple transaction")
@@ -28,7 +28,7 @@ vows.describe("simple transaction")
 	}
 })
 .addBatch({
-	'save document in new collection': {
+	'insert document in new collection': {
 		topic: function(){
 			var promise = new EventEmitter();
 			var promiseResult = {};
@@ -37,7 +37,7 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
-				.save(testContext.obj, function(err,doc){
+				.insert({a: 2}, function(err,doc){
 					promiseResult.insertResult = {err: err, doc: doc};
 					promise.emit("success", promiseResult);
 				});
@@ -49,23 +49,22 @@ vows.describe("simple transaction")
 		},
 		'should return save result with _id property': function(result){
 			assert.isNull(result.insertResult.err);
-			assert.isObject(result.insertResult.doc);
-			assert.isObject(result.insertResult.doc._id);
+			assert.isArray(result.insertResult.doc);
+			assert.isObject(result.insertResult.doc[0]);
+			assert.isObject(result.insertResult.doc[0]._id);
 			
-			testContext.obj = result.insertResult.doc;
+			testContext.objID = result.insertResult.doc[0]._id;
 		}
 	}
 })
 .addBatch({
-	'save/update last inserted document in last created collection': {
+	'update last inserted document in last created collection': {
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			testContext.obj.a = "updated";
-			
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.save(testContext.obj, function(err,doc){
+				.update({_id: testContext.objID}, {$set: {a: 'updated'}}, function(err,doc){
 					promise.emit("success", err, doc);
 				});
 			
@@ -74,8 +73,6 @@ vows.describe("simple transaction")
 		'should return update result with updated a property and _id': function(){
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
-			assert.equal(arguments[1].a, testContext.obj.a);
-			assert.isObject(arguments[1]._id);
 		}
 	}
 })
@@ -116,8 +113,8 @@ vows.describe("simple transaction")
 			assert.isNull(arguments[0]);
 			assert.isArray(arguments[1]);
 			assert.equal(arguments[1].length, 1);
-			assert.equal(arguments[1][0].a, testContext.obj.a);
-			assert.equal(arguments[1][0]._id.id, testContext.obj._id.id);
+			assert.equal(arguments[1][0].a, 'updated');
+			assert.equal(arguments[1][0]._id.id, testContext.objID.id);
 		}
 	}
 })
@@ -127,7 +124,7 @@ vows.describe("simple transaction")
 			var promise = new EventEmitter();
 			testContext.dbfacade
 				.withCollection(testContext.collectionName)
-				.remove({_id: testContext.obj._id}, function(err, doc){
+				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
 				});
 			return promise;

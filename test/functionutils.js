@@ -209,4 +209,45 @@ vows.describe("function")
 		}
 	}
 })
+.addBatch({
+	'test args for mixAsValue functionality': {
+		topic : function() {
+			var testArguments = [{a: 'a'},function(){ return 'a';}];
+			fargs(testArguments)
+				.skipAsValue({})
+				.mixValueWith(function(v){
+					if(v == null)
+						v = {};
+					v['additional'] = '1';
+					return v;
+				})
+				.skipAsFunction(undefined);
+			
+			fargs(testArguments)
+				.skipAsValue({})
+				.mixValueWith(function(v){
+					if(v == null)
+						v = {};
+					v['additional2'] = '2';
+					return v;
+				})
+				.skipAsFunction(undefined);
+			
+			return testArguments;
+		},
+		'should return valid arguments array':function(array) {
+			assert.isArray(array);
+			assert.isObject(array[0]);
+			assert.equal(array[0].a, "a");
+			
+			assert.isObject(array[1]);
+			assert.isString(array[1]['additional']);
+			assert.equal(array[1]['additional'], '1');
+			assert.isString(array[1]['additional2']);
+			assert.equal(array[1]['additional2'], '2');
+			
+			assert.isFunction(array[2]);
+		}
+	}
+})
 .export(module);

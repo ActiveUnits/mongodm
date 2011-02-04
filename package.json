@@ -2,7 +2,7 @@
 , "description":  "Data Modeling for MongoDB"
 , "version":  "0.0.1"
 , "author": "Boris Filipov <obiwonn@gmail.com>"
-, "dependencies": { "mongodb": "0.7.9"}
+, "dependencies": { "mongodb": ">= 0.8.0"}
 , "keywords": [ "mongo", "mongodb", "nosql" ]
 , "directories":  { "lib": "./lib" }
 , "scripts": { "test": "vows ./test/*.js" }

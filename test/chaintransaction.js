@@ -11,7 +11,7 @@ var testContext = {
 	obj: {a:2}
 };
 
-vows.describe("simple transaction")
+vows.describe("chain transaction")
 .addBatch({
 	'withDatabase testdb': {
 		topic:function(){
@@ -37,17 +37,18 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName, false, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
-				.save({a: 2}, function(err,doc){
+				.insert({a: 2}, function(err,doc){
 					promiseResult.saveResult = {err: err, doc: doc};
 				})
 				.find({a: 2}, function(err,docs){
 					promiseResult.findResult = {err: err, docs: docs};
 				})
 				.limit(1)
+				.skip(0)
 				.remove({a: 2},function(err){
 					promiseResult.removeResult = {err: err};
 				})
-				.save({a: 3}, function(err, doc){
+				.insert({a: 3}, function(err, doc){
 					promiseResult.saveResult2 = {err: err, doc: doc};
 				})
 				.count({a: 2}, function(err, c){
@@ -74,9 +75,7 @@ vows.describe("simple transaction")
 				assert.isNull(result.promiseResult[i].err);
 			}
 			
-			assert.isObject(result.promiseResult.saveResult.doc);
-			assert.isNumber(result.promiseResult.saveResult.doc.a);
-			assert.equal(result.promiseResult.saveResult.doc.a,2);
+			assert.isArray(result.promiseResult.saveResult.doc);
 			
 			assert.isArray(result.promiseResult.findResult.docs);
 			assert.equal(result.promiseResult.findResult.docs.length, 1);
@@ -84,9 +83,7 @@ vows.describe("simple transaction")
 			assert.isNumber(result.promiseResult.findResult.docs[0].a);
 			assert.equal(result.promiseResult.findResult.docs[0].a,2);
 			
-			assert.isObject(result.promiseResult.saveResult2.doc);
-			assert.isNumber(result.promiseResult.saveResult2.doc.a);
-			assert.equal(result.promiseResult.saveResult2.doc.a,3);
+			assert.isArray(result.promiseResult.saveResult2.doc);
 			
 			assert.isNumber(result.promiseResult.countResult.c);
 			assert.equal(result.promiseResult.countResult.c,0);
@@ -98,9 +95,7 @@ vows.describe("simple transaction")
 			assert.isNull(result.chainResult[0]);
 			
 			//saveObj
-			assert.isObject(result.chainResult[1]);
-			assert.isNumber(result.chainResult[1].a);
-			assert.equal(result.chainResult[1].a,2);
+			assert.isArray(result.chainResult[1]);
 			
 			//foundObjs
 			assert.isArray(result.chainResult[2]);
@@ -113,9 +108,7 @@ vows.describe("simple transaction")
 			assert.isNull(result.chainResult[3]);
 			
 			//saveObj2
-			assert.isObject(result.chainResult[4]);
-			assert.isNumber(result.chainResult[4].a);
-			assert.equal(result.chainResult[4].a,3);
+			assert.isArray(result.chainResult[4]);
 			
 			//c1
 			assert.isNumber(result.chainResult[5]);
