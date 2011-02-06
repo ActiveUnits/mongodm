@@ -6,7 +6,8 @@ var EventEmitter = require("events").EventEmitter;
 var mongodm = require("../index");
 
 var testContext = {
-	dbfacade: null
+	dbfacade: null,
+	lastSavedDoc: null
 };
 
 var DocDefinition = {
@@ -14,7 +15,7 @@ var DocDefinition = {
     	fields: {
             name: null,
             token: null,
-            user:{ userid: null }, 
+            user:{ userid: null, createdAt: null }, 
             createdAt: null,
             lastUpdatedAt: null,
             expiresAt: null
@@ -23,6 +24,8 @@ var DocDefinition = {
     		save: function(){
                 if(!this.createdAt)
                     this.createdAt = new Date();
+                if(!this.user.createdAt)
+                	this.user.createdAt = new Date();
                 this.lastUpdatedAt = new Date();
             }	
     	}
@@ -80,6 +83,8 @@ vows.describe("document modeling")
 			assert.isObject(arguments[1]);
 			assert.isNotNull(arguments[1]._id);
 			assert.equal(arguments[1].name, "test");
+			
+			testContext.lastSavedDoc = arguments[1]; 
 		}
 	}
 })
@@ -105,6 +110,7 @@ vows.describe("document modeling")
 			assert.isObject(arguments[1]);
 			assert.isNotNull(arguments[1]._id);
 			assert.equal(arguments[1].user.userid, "blah");
+			assert.equal(arguments[1].user.createdAt.getTime(), testContext.lastSavedDoc.createdAt.getTime());
 			assert.equal(arguments[1].name, "test");
 		}
 	}
