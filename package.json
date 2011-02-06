@@ -1,6 +1,6 @@
 { "name": "mongodm"
 , "description":  "Data Modeling for MongoDB"
-, "version":  "0.0.3"
+, "version":  "0.0.4"
 , "author": "Boris Filipov <obiwonn@gmail.com>"
 , "dependencies": { "mongodb": ">= 0.8.0"}
 , "keywords": [ "mongo", "mongodb", "nosql" ]
