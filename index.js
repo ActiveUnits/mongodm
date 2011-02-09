@@ -1,20 +1,22 @@
-var mongo = require("mongodb");
 var fargs = require("./lib/utils/function").fargs;
+var chainbuilder = require("./lib/utils/chainbuilder");
 var DatabaseFacade = require("./lib/DatabaseFacade");
+var sys = require("sys");
 
-exports.withDatabase = function(dbname, host, port, callback) {
-	fargs(arguments)
-		.required(new Error("dbname required"))
-		.skipAsValue("localhost")
-		.skipAsValue(27017)
-		.skipAsFunction(null);
-	
-	var db = new mongo.Db(dbname, new mongo.Server(host, port, {}));
-	db.open(function(){
-		if(callback != null)
-			callback(null, new DatabaseFacade(db));
-	});
-	db.on("error", function(err){
-		callback(err,null);
-	});
-};
+chainbuilder.createChain(exports)
+			.defineFork("withDatabase", function(dbname, host, port, asynch, callback) {
+				fargs(arguments)
+					.required(new Error("dbname required"))
+					.skipAsValue("localhost")
+					.skipAsValue(27017)
+					.skipAsValue(false)
+					.skipAsFunction(null);
+			
+				var databaseFacade = new DatabaseFacade();
+				databaseFacade.asynch(asynch).allocate(dbname, host, port, function(err, db){
+					if(callback)
+						callback(err, databaseFacade);
+				});
+				return databaseFacade;
+			})
+			.finalizeWith("end");

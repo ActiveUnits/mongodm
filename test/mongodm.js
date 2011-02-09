@@ -16,7 +16,7 @@ vows.describe("mongodm")
 			var promise = new EventEmitter();
 			mongodb.withDatabase("testdb", function(err, dbfacade){
 				promise.emit("success", err, dbfacade);
-			});
+			}).end();
 			return promise;
 		},
 		'should open connection without error': function() {
@@ -33,7 +33,7 @@ vows.describe("mongodm")
 			var promise = new EventEmitter();
 			testContext.dbfacade.drop(function(err){
 				promise.emit("success", err);
-			});
+			}).end();
 			return promise;
 		},
 		'should close connection without error': function(){

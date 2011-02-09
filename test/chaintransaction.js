@@ -18,7 +18,8 @@ vows.describe("chain transaction")
 			var promise = new EventEmitter();
 			mongodm.withDatabase("testdb",function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
-					});
+					})
+					.end();
 			return promise;
 		},
 		'dbclient should be created': function(){
@@ -60,7 +61,7 @@ vows.describe("chain transaction")
 				.drop(function(err){
 					promiseResult.drop = {err: err};
 				})
-				.end(function(err, saveObj, foundObjs, removedObjErr, saveObj2, c1, c2, dropResult){
+				.end(function(err, allocateCollection, saveObj, foundObjs, removedObjErr, saveObj2, c1, c2, dropResult){
 					promise.emit("success", err, {'chainResult': arguments, 'promiseResult': promiseResult});
 				});
 			return promise;
@@ -94,32 +95,35 @@ vows.describe("chain transaction")
 			//err
 			assert.isNull(result.chainResult[0]);
 			
+			// allocateCollection
+			assert.isObject(result.chainResult[1]);
+			
 			//saveObj
-			assert.isArray(result.chainResult[1]);
+			assert.isArray(result.chainResult[2]);
 			
 			//foundObjs
-			assert.isArray(result.chainResult[2]);
-			assert.equal(result.chainResult[2].length, 1);
-			assert.isObject(result.chainResult[2][0]);
-			assert.isNumber(result.chainResult[2][0].a);
-			assert.equal(result.chainResult[2][0].a,2);
+			assert.isArray(result.chainResult[3]);
+			assert.equal(result.chainResult[3].length, 1);
+			assert.isObject(result.chainResult[3][0]);
+			assert.isNumber(result.chainResult[3][0].a);
+			assert.equal(result.chainResult[3][0].a,2);
 			
 			//removedObjErr
-			assert.isNull(result.chainResult[3]);
+			assert.isNull(result.chainResult[4]);
 			
 			//saveObj2
-			assert.isArray(result.chainResult[4]);
+			assert.isArray(result.chainResult[5]);
 			
 			//c1
-			assert.isNumber(result.chainResult[5]);
-			assert.isNumber(result.chainResult[5],0);
+			assert.isNumber(result.chainResult[6]);
+			assert.isNumber(result.chainResult[6],0);
 			
 			//c2
-			assert.isNumber(result.chainResult[6]);
-			assert.isNumber(result.chainResult[6],1);
+			assert.isNumber(result.chainResult[7]);
+			assert.isNumber(result.chainResult[7],1);
 			
 			//drop
-			assert.isTrue(result.chainResult[7]);
+			assert.isTrue(result.chainResult[8]);
 		}
 	}
 })
@@ -131,7 +135,8 @@ vows.describe("chain transaction")
 				.withCollection(testContext.collectionName)
 				.find({},function(err, results){
 					promise.emit("success", err, results);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return empty result set': function(){
@@ -148,7 +153,8 @@ vows.describe("chain transaction")
 			testContext.dbfacade
 				.drop(function(err){
 					promise.emit("success", err);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return dropped collection result': function() {

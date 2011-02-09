@@ -18,7 +18,8 @@ vows.describe("simple transaction")
 			var promise = new EventEmitter();
 			mongodm.withDatabase("testdb",function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
-					});
+					})
+					.end();
 			return promise;
 		},
 		'dbclient should be created': function(){
@@ -39,6 +40,8 @@ vows.describe("simple transaction")
 				})
 				.insert({a: 2}, function(err,doc){
 					promiseResult.insertResult = {err: err, doc: doc};
+				})
+				.end(function(){
 					promise.emit("success", promiseResult);
 				});
 			return promise;
@@ -66,7 +69,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: {a: 'updated'}}, function(err,doc){
 					promise.emit("success", err, doc);
-				});
+				})
+				.end();
 			
 			return promise;
 		},
@@ -85,7 +89,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
-				});
+				})
+				.end();
 			
 			return promise;
 		},
@@ -105,7 +110,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
-				});
+				})
+				.end();
 			
 			return promise;
 		},
@@ -126,7 +132,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return remove result': function(){
@@ -142,7 +149,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return find result': function(){
@@ -160,7 +168,8 @@ vows.describe("simple transaction")
 				.withCollection(testContext.collectionName)
 				.drop(function(err){
 					promise.emit("success", err);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return dropped collection result': function() {
@@ -172,14 +181,20 @@ vows.describe("simple transaction")
 	'drop & close database': {
 		topic: function(){
 			var promise = new EventEmitter();
+			var result = {};
 			testContext.dbfacade
 				.drop(function(err){
-					promise.emit("success", err);
+					result.dropErr = err;
+				})
+				.end(function(){
+					result.args = arguments;
+					promise.emit("success", result);
 				});
 			return promise;
 		},
 		'should return dropped collection result': function() {
-			assert.isNull(arguments[0]);
+			assert.isNull(arguments[0].dropErr);
+			assert.isNull(arguments[0].args[0]);
 		}
 	}
 })

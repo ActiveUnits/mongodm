@@ -13,25 +13,18 @@ vows.describe("function")
 				
 			};
 			
-			var chain = chainbuilder.chain(obj.prototype);
+			var chain = chainbuilder.createChain(obj.prototype);
 			['method1', 'method2', 'method3'].forEach(function(method){
-				chain.operation(method, function(){
-					fargs(arguments)
-						.skipAsValue(method);
-					
-					var args = [null];
-					for(var i = 0; i<arguments.length-1; i++)
-						args.push(arguments[i]);
-					
-					if(typeof arguments[arguments.length-1] == "function")
-						arguments[arguments.length-1].apply(this,args);
+				chain.defineMethod(method, function(method,callback){
+					if(callback)
+						callback(null, method);
 				});
 			});
 			
 			["option1", "option2"].forEach(function(option){
-				chain.option(option, function(operation, value1){
+				chain.defineMethodOption(option, function(operation, value){
 					fargs(operation.args)
-						.skipAsValue(value1);
+						.skipAsValue(value);
 				});
 			});
 			
@@ -61,10 +54,10 @@ vows.describe("function")
 			'should method1() + method2() work': {
 				topic : function(obj) {
 					var result = {};
-					obj.method1(function(err, name){
+					obj.method1("method1", function(err, name){
 						result.call1 = name;
 					});
-					obj.method2(function(err, name){
+					obj.method2("method2", function(err, name){
 						result.call2 = name;
 					});
 					return result;
@@ -88,7 +81,7 @@ vows.describe("function")
 						   result.call2 = name;
 					   })
 					   .option2("modified")
-					   .end(function(err, call1Name,call2Name) {
+					   .end(function(err, call1Name, call2Name) {
 						   result.endCall1 = call1Name;
 						   result.endCall2 = call2Name;
 					   });
@@ -98,6 +91,7 @@ vows.describe("function")
 				'should return proper result':function(result){
 					assert.isObject(result);
 					assert.equal(result.endCall1,"modified");
+					assert.equal(result.endCall2,"modified");
 					assert.equal(result.endCall1,result.call1);
 					assert.equal(result.endCall2,result.call2);
 				}

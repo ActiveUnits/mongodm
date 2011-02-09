@@ -17,7 +17,8 @@ vows.describe("simple transaction with deep nested object properties")
 			var promise = new EventEmitter();
 			mongodm.withDatabase("testdb",function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
-					});
+					})
+					.end();
 			return promise;
 		},
 		'dbclient should be created': function(){
@@ -41,7 +42,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.insert({a:2,nested:{deeply:{under:{the:{sea:'tresure'}}}}}, function(err,doc){
 					promiseResult.insertResult = {err: err, doc: doc};
 					promise.emit("success", promiseResult);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return collection result': function(result) {
@@ -67,7 +69,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
 					promise.emit("success", err, doc);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return update result': function(){
@@ -85,7 +88,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
 					promise.emit("success", err, doc);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return update result': function(){
@@ -102,7 +106,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return count result': function(){
@@ -120,7 +125,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.find({}, function(err, results){
 					promise.emit("success", err, results);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return find result': function(){
@@ -142,7 +148,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.find({'nested.deeply.under.the.sea': "found"}, function(err, results){
 					promise.emit("success", err, results);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return find result': function(){
@@ -164,7 +171,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return remove result': function(){
@@ -180,7 +188,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.find({'nested.deeply.under.the.sea': "found"}, function(err, cursor){
 					promise.emit("success", err, cursor);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return find result': function(){
@@ -198,7 +207,8 @@ vows.describe("simple transaction with deep nested object properties")
 				.withCollection(testContext.collectionName)
 				.drop(function(err){
 					promise.emit("success", err);
-				});
+				})
+				.end();
 			return promise;
 		},
 		'should return dropped collection result': function() {
@@ -210,9 +220,11 @@ vows.describe("simple transaction with deep nested object properties")
 	'drop & close database testdb': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.drop(function(err){
-				promise.emit("success",err);
-			});
+			testContext.dbfacade
+						.drop(function(err){
+							promise.emit("success",err);
+						})
+						.end();
 			return promise;
 		},
 		'dbclient should be closed':function(){
