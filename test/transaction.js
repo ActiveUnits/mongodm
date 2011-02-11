@@ -19,7 +19,12 @@ vows.describe("simple transaction")
 			mongodm.withDatabase("testdb",function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
 					})
-					.end();
+					.end(function(err){
+						sys.log("first");
+					})
+					.end(function(err){
+						sys.log("what?");
+					});
 			return promise;
 		},
 		'dbclient should be created': function(){
