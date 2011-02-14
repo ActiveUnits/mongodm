@@ -16,9 +16,12 @@ vows.describe("function")
 			var chain = chainbuilder.createChain(obj.prototype);
 			['method1', 'method2', 'method3'].forEach(function(method){
 				chain.defineMethod(method, function(method,callback){
-					if(callback)
-						callback(null, method);
+					callback(null, method);
 				});
+			});
+			
+			chain.defineMethod('methodRNC',function(method,callback){
+				callback(null, method);
 			});
 			
 			["option1", "option2"].forEach(function(option){
@@ -94,6 +97,23 @@ vows.describe("function")
 					assert.equal(result.endCall2,"modified");
 					assert.equal(result.endCall1,result.call1);
 					assert.equal(result.endCall2,result.call2);
+				}
+			},
+			'test methodRNC': {
+				topic: function(obj) {
+					var result = {};
+					obj.asynch(false)
+					   .methodRNC("methodRNC")
+					   .end(function(){
+						   result = arguments;
+					   });
+					return result;
+				},
+				'not error': function(result) {
+					assert.isNull(result[0]);
+				},
+				'methodRNC returned ':function(result){
+					assert.equal(result[1],"methodRNC");
 				}
 			}
 		}
