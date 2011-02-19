@@ -9,7 +9,7 @@ exports.withDatabase = function(dbname, host, port, callback) {
 		.skipAsValue(27017)
 		.skipAsFunction(null);
 	
-	var db = new mongo.Db(dbname, new mongo.Server(host, port, {}));
+	var db = new mongo.Db(dbname, new mongo.Server(host, port, {}), {native_parser:true});
 	db.open(function(){
 		if(callback != null)
 			callback(null, new DatabaseFacade(db));
