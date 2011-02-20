@@ -18,12 +18,6 @@ vows.describe("simple transaction")
 			var promise = new EventEmitter();
 			mongodm.withDatabase("testdb",function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
-					})
-					.end(function(err){
-						sys.log("first");
-					})
-					.end(function(err){
-						sys.log("what?");
 					});
 			return promise;
 		},
@@ -39,7 +33,7 @@ vows.describe("simple transaction")
 			var promise = new EventEmitter();
 			var promiseResult = {};
 			
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
@@ -70,7 +64,7 @@ vows.describe("simple transaction")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: {a: 'updated'}}, function(err,doc){
 					promise.emit("success", err, doc);
@@ -90,7 +84,7 @@ vows.describe("simple transaction")
 		topic : function(){
 			var promise = new EventEmitter();
 			
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
@@ -111,7 +105,7 @@ vows.describe("simple transaction")
 		topic : function(){
 			var promise = new EventEmitter();
 			
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -133,7 +127,7 @@ vows.describe("simple transaction")
 	'remove document in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
@@ -150,7 +144,7 @@ vows.describe("simple transaction")
 	'find documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.find({a: 'updated'}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -169,7 +163,7 @@ vows.describe("simple transaction")
 	'drop collection': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade
+			testContext.dbfacade.asynch(false)
 				.withCollection(testContext.collectionName)
 				.drop(function(err){
 					promise.emit("success", err);
@@ -187,19 +181,15 @@ vows.describe("simple transaction")
 		topic: function(){
 			var promise = new EventEmitter();
 			var result = {};
-			testContext.dbfacade
+			testContext.dbfacade.asynch(true)
 				.drop(function(err){
 					result.dropErr = err;
-				})
-				.end(function(){
-					result.args = arguments;
 					promise.emit("success", result);
 				});
 			return promise;
 		},
 		'should return dropped collection result': function() {
 			assert.isNull(arguments[0].dropErr);
-			assert.isNull(arguments[0].args[0]);
 		}
 	}
 })

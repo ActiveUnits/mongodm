@@ -88,7 +88,6 @@ vows.describe("document modeling")
 			assert.isFunction(Doc.findOneByUsername);
 			assert.isFunction(Doc.countAndSearch);
 			assert.isFunction(Doc.withCollection);
-			assert.isFunction(Doc.withTransaction);
 		}
 	}
 })
