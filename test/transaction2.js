@@ -35,7 +35,7 @@ vows.describe("simple transaction with deep nested object properties")
 			
 			var collectionName = 'testDocuments'+Math.round(Math.random()*1000);
 			testContext.collectionName = collectionName;
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(collectionName, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
@@ -65,7 +65,7 @@ vows.describe("simple transaction with deep nested object properties")
 			var promise = new EventEmitter();
 			var obj = {nested:{deeply:{under:{the:{sea:"found"}}}}};
 			
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
 					promise.emit("success", err, doc);
@@ -84,7 +84,7 @@ vows.describe("simple transaction with deep nested object properties")
 		topic: function(){
 			var promise = new EventEmitter();
 			var obj = {a: 43};
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.update({_id: testContext.objID}, {$set: obj}, function(err,doc){
 					promise.emit("success", err, doc);
@@ -102,7 +102,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'count documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.count({}, function(err,c){
 					promise.emit("success", err, c);
@@ -121,7 +121,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'find all documents in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.find({}, function(err, results){
 					promise.emit("success", err, results);
@@ -144,7 +144,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'find document by nested pattern in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.find({'nested.deeply.under.the.sea': "found"}, function(err, results){
 					promise.emit("success", err, results);
@@ -167,7 +167,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'remove document in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.remove({_id: testContext.objID}, function(err, doc){
 					promise.emit("success", err, doc);
@@ -184,7 +184,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'find document by nested pattern in last created collection': {
 		topic : function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.find({'nested.deeply.under.the.sea': "found"}, function(err, cursor){
 					promise.emit("success", err, cursor);
@@ -203,7 +203,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'drop collection': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(false)
+			testContext.dbfacade.synch(true)
 				.withCollection(testContext.collectionName)
 				.drop(function(err){
 					promise.emit("success", err);
@@ -220,7 +220,7 @@ vows.describe("simple transaction with deep nested object properties")
 	'drop & close database testdb': {
 		topic: function(){
 			var promise = new EventEmitter();
-			testContext.dbfacade.asynch(true)
+			testContext.dbfacade.synch(false)
 						.drop(function(err){
 							promise.emit("success",err);
 						});

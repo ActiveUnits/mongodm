@@ -19,12 +19,14 @@ var UserDocumentDefinition = {
 					.findOne({username: username}, callback);
 		},
 		countAndSearch : function(pattern,limit,offset,callback) {
-			this.withTransaction()
+			this.withCollection().synch(true)
 					.find(pattern)
 					.limit(limit)
 					.skip(offset)
 					.count(pattern)
-					.end(callback);
+					.end(function(){
+						callback.apply(this, arguments);
+					});
 		}
 	},
 	
@@ -153,13 +155,12 @@ vows.describe("document modeling")
 	}
 })
 .addBatch({
-	'find last created document from db using document find method via transaction': {
+	'find last created document from db using document find method via document': {
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			testContext.dbfacade.withDocument("User").withTransaction()
-								  .find({username: "TestUser"})
-								  .end(function(err, users){
+			testContext.dbfacade.withDocument("User")
+								  .find({username: "TestUser"},function(err, users){
 									  promise.emit("success", err, users);
 								  });
 			return promise;
@@ -183,7 +184,8 @@ vows.describe("document modeling")
 		topic: function(){
 			var promise = new EventEmitter();
 			
-			testContext.dbfacade.withDocument("User").withCollection()
+			testContext.dbfacade.withDocument("User")
+								  .withCollection()
 								  .find({username: "TestUser"},function(err, users){
 									  promise.emit("success", err, users);
 								  });

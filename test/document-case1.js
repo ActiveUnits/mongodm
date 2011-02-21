@@ -39,7 +39,6 @@ var UserDocumentDefinition = {
 };
 
 vows.describe("document modeling case 1")
-vows.describe("document modeling")
 .addBatch({
 	'withDatabase testdb': {
 		topic:function(){

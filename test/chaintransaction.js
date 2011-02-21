@@ -35,7 +35,7 @@ vows.describe("chain transaction")
 			var promiseResult = {};
 			
 			testContext.dbfacade
-				.withCollection(testContext.collectionName, false, function(err, collection){
+				.withCollection(testContext.collectionName, true, function(err, collection){
 					promiseResult.withCollectionResult = {err: err, collection: collection};
 				})
 				.insert({a: 2}, function(err,doc){
@@ -61,7 +61,7 @@ vows.describe("chain transaction")
 				.drop(function(err){
 					promiseResult.drop = {err: err};
 				})
-				.end(function(err, allocateCollection, saveObj, foundObjs, removedObjErr, saveObj2, c1, c2, dropResult){
+				.end(function(err, saveObj, foundObjs, removedObjErr, saveObj2, c1, c2, dropResult){
 					promise.emit("success", err, {'chainResult': arguments, 'promiseResult': promiseResult});
 				});
 			return promise;
@@ -93,37 +93,43 @@ vows.describe("chain transaction")
 			assert.equal(result.promiseResult.countResult2.c,1);
 			
 			//err
-			assert.isNull(result.chainResult[0]);
-			
-			// allocateCollection
-			assert.isObject(result.chainResult[1]);
+			var index = 0;
+			assert.isNull(result.chainResult[index]);
+			index += 1;
 			
 			//saveObj
-			assert.isArray(result.chainResult[2]);
+			assert.isArray(result.chainResult[index]);
+			index += 1;
 			
 			//foundObjs
-			assert.isArray(result.chainResult[3]);
-			assert.equal(result.chainResult[3].length, 1);
-			assert.isObject(result.chainResult[3][0]);
-			assert.isNumber(result.chainResult[3][0].a);
-			assert.equal(result.chainResult[3][0].a,2);
+			assert.isArray(result.chainResult[index]);
+			assert.equal(result.chainResult[index].length, 1);
+			assert.isObject(result.chainResult[index][0]);
+			assert.isNumber(result.chainResult[index][0].a);
+			assert.equal(result.chainResult[index][0].a,2);
+			index += 1;
 			
 			//removedObjErr
-			assert.isNull(result.chainResult[4]);
+			assert.isNull(result.chainResult[index]);
+			index += 1;
 			
 			//saveObj2
-			assert.isArray(result.chainResult[5]);
+			assert.isArray(result.chainResult[index]);
+			index += 1;
 			
 			//c1
-			assert.isNumber(result.chainResult[6]);
-			assert.isNumber(result.chainResult[6],0);
+			assert.isNumber(result.chainResult[index]);
+			assert.isNumber(result.chainResult[index],0);
+			index += 1;
 			
 			//c2
-			assert.isNumber(result.chainResult[7]);
-			assert.isNumber(result.chainResult[7],1);
+			assert.isNumber(result.chainResult[index]);
+			assert.isNumber(result.chainResult[index],1);
+			index += 1;
 			
 			//drop
-			assert.isTrue(result.chainResult[8]);
+			assert.isTrue(result.chainResult[index]);
+			index += 1;
 		}
 	}
 })

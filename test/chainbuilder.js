@@ -31,8 +31,6 @@ vows.describe("function")
 				});
 			});
 			
-			chain.finalizeWith('end');
-			
 			return obj;
 		},
 		'should return object to be created': function(obj) {
@@ -75,7 +73,7 @@ vows.describe("function")
 				topic: function(obj) {
 					var result = {};
 					
-					obj.asynch(false)
+					obj.synch(true)
 					   .method3(function(err, name){
 						   result.call1 = name;
 						})
@@ -102,7 +100,7 @@ vows.describe("function")
 			'test methodRNC': {
 				topic: function(obj) {
 					var result = {};
-					obj.asynch(false)
+					obj.synch(true)
 					   .methodRNC("methodRNC")
 					   .end(function(){
 						   result = arguments;
