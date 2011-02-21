@@ -109,7 +109,7 @@ vows.describe("document modeling case 2")
 			assert.isObject(arguments[1]);
 			assert.isNotNull(arguments[1]._id);
 			assert.equal(arguments[1].user.userid, "blah");
-			assert.equal(arguments[1].user.createdAt.getTime(), testContext.lastSavedDoc.createdAt.getTime());
+			assert.equal(arguments[1].createdAt.getTime(), testContext.lastSavedDoc.createdAt.getTime());
 			assert.equal(arguments[1].name, "test");
 		}
 	}

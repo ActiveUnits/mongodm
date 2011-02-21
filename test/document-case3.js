@@ -37,7 +37,7 @@ vows.describe("document modeling case 3")
 	'withDatabase testdb': {
 		topic:function(){
 			var promise = new EventEmitter();
-			mongodm.withDatabase("testdb",function(err,dbfacade){
+			mongodm.withDatabase("testdb"+Math.ceil(Math.random()*1000),function(err,dbfacade){
 						promise.emit("success",err,dbfacade);
 					});
 			return promise;
