@@ -186,9 +186,10 @@ vows.describe("document modeling")
 			
 			testContext.dbfacade.withDocument("User")
 								  .withCollection()
+								  .synch(true)
 								  .find({username: "TestUser"},function(err, users){
 									  promise.emit("success", err, users);
-								  });
+								  }).limit(1).end();
 			return promise;
 		},
 		'should not return error': function() {
