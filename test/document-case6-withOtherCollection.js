@@ -18,7 +18,7 @@ var DocDefinition = {
     }
 };
 
-vows.describe("document modeling case 5")
+vows.describe("document modeling case 6")
 .addBatch({
 	'withDatabase testdb': {
 		topic:function(){
@@ -37,10 +37,14 @@ vows.describe("document modeling case 5")
 .addBatch({
 	'define document model': {
 		topic: function(){
-			return testContext.dbfacade.withDocument("Doc", DocDefinition);
+			var result = {};
+			result.doc = testContext.dbfacade.withDocument("Doc", DocDefinition);
+			result.doc2 = testContext.dbfacade.withDocument("Doc2", DocDefinition);
+			return result;
 		},
-		'should return valid Document Object': function(Doc) {
-			assert.isFunction(Doc);
+		'should return valid Document Object': function(result) {
+			assert.isFunction(result.doc);
+			assert.isFunction(result.doc2);
 		}
 	}
 })
@@ -49,7 +53,7 @@ vows.describe("document modeling case 5")
 		topic: function() {
 			var promise = new EventEmitter();
 			
-			var doc = new (testContext.dbfacade.withDocument("Doc"));
+			var doc = new (testContext.dbfacade.withDocument("Doc2"));
 			doc.name = "test";
 			doc.type.name = "testtype";
 			doc.type.array = ['item'];
@@ -74,46 +78,19 @@ vows.describe("document modeling case 5")
 	}
 })
 .addBatch({
-	'save new document': {
+	'find all withCollection(doc2)': {
 		topic: function() {
 			var promise = new EventEmitter();
 			
-			var doc = new (testContext.dbfacade.withDocument("Doc"));
-			doc.name = "test";
-			doc.type.name = "testtype";
-			doc.type.array = ['item'];
-
-			doc.save(function(err, obj){
-				promise.emit("success", err, obj);
-			});
-			
-			return promise;
-		},
-		'should not return error': function() {
-			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
-			assert.isNotNull(arguments[1]._id);
-			assert.equal(arguments[1].name, "test");
-			assert.equal(arguments[1].type.name, "testtype");
-			assert.isArray(arguments[1].type.array);
-			assert.equal(arguments[1].type.array[0], 'item');
-			
-			testContext.docInstance = arguments[1];
-		}
-	}
-})
-.addBatch({
-	'find last saved doc only': {
-		topic: function() {
-			var promise = new EventEmitter();
-			
-			testContext.dbfacade.withDocument("Doc").withCollection().synch(true)
-				.find({name: "test"}, function(err, obj){
-					if(obj)
-						promise.emit("success", err, obj);
+			testContext.dbfacade.withDocument("Doc").withCollection("Doc2").synch(true)
+				.find({name: "test"}, function(err, objs){
+					if(objs)
+						promise.emit("success", err, objs);
 					else
 						promise.emit("success", err);
-				}).limit(1).end();
+				})
+				.limit(1)
+				.end();
 			
 			return promise;
 		},
