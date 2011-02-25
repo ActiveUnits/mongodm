@@ -4,7 +4,7 @@ var DatabaseFacade = require("./lib/DatabaseFacade");
 var mongo = require("mongodb");
 var sys = require("sys");
 
-exports.databases = new (require("./lib/ObjectsPool"));
+exports.databaseConnections = new (require("./lib/ObjectsPool"));
 
 chainbuilder.createChain(exports)
 			.defineMethod("withDatabase", function(dbname, host, port, callback) {
@@ -14,28 +14,24 @@ chainbuilder.createChain(exports)
 					.skipAsValue(27017)
 					.skipAsFunction(null);
 				
-				var databaseFacade = (new DatabaseFacade());
 				var _self = this;
-				if(this.databases.get(host+dbname+port) == null) {
-					
+				var dbfacade = this.databaseConnections.get(host+dbname+port);
+				if(dbfacade == null) {
 					var db = new mongo.Db(dbname, new mongo.Server(host, port, {}), {native_parser:true});
-					db.open(function(err, db){
+					db.open(function(err, db) {
+						var databaseFacade = (new DatabaseFacade());
 						if(err == null) {
 							databaseFacade.db = db;
-							_self.databases.set(host+dbname+port, {db: databaseFacade.db, collections: databaseFacade.collections});
+							_self.databaseConnections.set(host+dbname+port, databaseFacade);
 						}
 						
 						if(callback)
 							callback(err, databaseFacade);
 					});
 					db.on("close",function(){
-						_self.databases.set(host+dbname+port, null);
+						_self.databaseConnections.set(host+dbname+port, null);
 					});
-					
 				} else {
-					databaseFacade.db = this.databases.get(host+dbname+port).db;
-					databaseFacade.collections = this.databases.get(host+dbname+port).collections;
-					if(callback)
-						callback(null, databaseFacade);
+					callback(null, dbfacade);
 				}
 			});
