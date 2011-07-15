@@ -1,8 +1,8 @@
 { "name": "mongodm"
 , "description":  "Data Modeling for MongoDB"
-, "version":  "0.2.5"
+, "version":  "0.2.6"
 , "author": "Boris Filipov <obiwonn@gmail.com>"
-, "dependencies": { "mongodb": ">= 0.8.0"}
+, "dependencies": { "mongodb": "http://github.com/ActiveUnits/node-mongodb-native/tarball/master"}
 , "keywords": [ "mongo", "mongodb", "nosql" ]
 , "directories":  { "lib": "./lib" }
 , "scripts": { "test": "vows ./test/*.js" }

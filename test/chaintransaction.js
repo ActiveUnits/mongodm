@@ -61,7 +61,7 @@ vows.describe("chain transaction")
 				.drop(function(err){
 					promiseResult.drop = {err: err};
 				})
-				.end(function(err, saveObj, foundObjs, removedObjErr, saveObj2, c1, c2, dropResult){
+				.end(function(err, saveObj, foundObjs, removedObjResult, saveObj2, c1, c2, dropResult){
 					promise.emit("success", err, {'chainResult': arguments, 'promiseResult': promiseResult});
 				});
 			return promise;
@@ -109,8 +109,8 @@ vows.describe("chain transaction")
 			assert.equal(result.chainResult[index][0].a,2);
 			index += 1;
 			
-			//removedObjErr
-			assert.isNull(result.chainResult[index]);
+			//removedObjResult
+			assert.equal(result.chainResult[index], true);
 			index += 1;
 			
 			//saveObj2

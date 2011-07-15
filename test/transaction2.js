@@ -75,7 +75,7 @@ vows.describe("simple transaction with deep nested object properties")
 		},
 		'should return update result': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
+			assert.equal(arguments[1], true);
 		}
 	}
 })
@@ -94,7 +94,7 @@ vows.describe("simple transaction with deep nested object properties")
 		},
 		'should return update result': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
+			assert.equal(arguments[1], true);
 		}
 	}
 })

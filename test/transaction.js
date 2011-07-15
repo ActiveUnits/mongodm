@@ -74,7 +74,7 @@ vows.describe("simple transaction")
 		},
 		'should return update result with updated a property and _id': function(){
 			assert.isNull(arguments[0]);
-			assert.isObject(arguments[1]);
+			assert.equal(arguments[1], true);
 		}
 	}
 })
