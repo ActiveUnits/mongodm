@@ -23,6 +23,21 @@ var DocDefinition = {
     }
 };
 
+var updateObj = {
+	name: "a",
+	type: { name: "new value" }
+};
+
+var updateObj2 = {
+	name: "a",
+	type: { array: [{objField: 1}, "myValue"] }
+};
+
+var updateObj3 = {
+		name: "a",
+		type: { array: ["myValue"] }
+	};
+
 vows.describe("document modeling case 9 ids")
 .addBatch({
 	'withDatabase testdb': {
@@ -87,20 +102,31 @@ vows.describe("document modeling case 9 ids")
 	}
 })
 .addBatch({
-	'find using _id of type string': {
+	'update document': {
 		topic: function() {
 			var promise = new EventEmitter();
-			testContext.dbfacade.withDocument("Doc")
-				.find({_id: testContext.docInstance._id.toString()}, function(err, objs){
-					promise.emit("success", err, objs);
-				});
+			
+			testContext.docInstance.updateFieldsFrom(updateObj);
+
+			testContext.docInstance.save(function(err, obj){
+				promise.emit("success", err, obj);
+			});
 			
 			return promise;
 		},
 		'should not return error': function() {
 			assert.isNull(arguments[0]);
-			assert.isArray(arguments[1]);
-			assert.equal(arguments[1].length, 1);
+			assert.isObject(arguments[1]);
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.equal(arguments[1].type.array[0], 'item');
+			
+			var jsonObj = arguments[1].toJSON();
+			assert.isString(jsonObj._id);
+			
+			testContext.docInstance = arguments[1];
 		}
 	}
 })
@@ -110,7 +136,7 @@ vows.describe("document modeling case 9 ids")
 			var promise = new EventEmitter();
 			
 			testContext.dbfacade.withDocument("Doc")
-				.find({_id: testContext.docInstance._id}, function(err, objs){
+				.findOne({_id: testContext.docInstance._id}, function(err, objs){
 					promise.emit("success", err, objs);
 				});
 			
@@ -118,19 +144,52 @@ vows.describe("document modeling case 9 ids")
 		},
 		'should not return error': function() {
 			assert.isNull(arguments[0]);
-			assert.isArray(arguments[1]);
-			assert.equal(arguments[1].length, 1);
+			assert.isObject(arguments[1]);
+			
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.equal(arguments[1].type.array[0], 'item');
 		}
 	}
 })
 .addBatch({
-	'find one with _id of type string': {
+	'update document': {
+		topic: function() {
+			var promise = new EventEmitter();
+			
+			testContext.docInstance.updateFieldsFrom(updateObj2);
+
+			testContext.docInstance.save(function(err, obj){
+				promise.emit("success", err, obj);
+			});
+			
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isObject(arguments[1]);
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.isObject(arguments[1].type.array[0]);
+			assert.equal(arguments[1].type.array[0].objField, 1);
+			assert.equal(arguments[1].type.array[1], "myValue");
+
+			testContext.docInstance = arguments[1];
+		}
+	}
+})
+.addBatch({
+	'find using _id of type ObjectID': {
 		topic: function() {
 			var promise = new EventEmitter();
 			
 			testContext.dbfacade.withDocument("Doc")
-				.findOne({_id: testContext.docInstance._id.toString()}, function(err, obj){
-					promise.emit("success", err, obj);
+				.findOne({_id: testContext.docInstance._id}, function(err, objs){
+					promise.emit("success", err, objs);
 				});
 			
 			return promise;
@@ -138,17 +197,51 @@ vows.describe("document modeling case 9 ids")
 		'should not return error': function() {
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.isObject(arguments[1].type.array[0]);
+			assert.equal(arguments[1].type.array[0].objField, 1);
+			assert.equal(arguments[1].type.array[1], "myValue");
 		}
 	}
 })
 .addBatch({
-	'find one with _id of type ObjectID': {
+	'update document': {
+		topic: function() {
+			var promise = new EventEmitter();
+			
+			testContext.docInstance.updateFieldsFrom(updateObj3);
+
+			testContext.docInstance.save(function(err, obj){
+				promise.emit("success", err, obj);
+			});
+			
+			return promise;
+		},
+		'should not return error': function() {
+			assert.isNull(arguments[0]);
+			assert.isObject(arguments[1]);
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.equal(arguments[1].type.array.length, 1);
+			assert.equal(arguments[1].type.array[0], "myValue");
+
+			testContext.docInstance = arguments[1];
+		}
+	}
+})
+.addBatch({
+	'find using _id of type ObjectID': {
 		topic: function() {
 			var promise = new EventEmitter();
 			
 			testContext.dbfacade.withDocument("Doc")
-				.findOne({_id: testContext.docInstance._id}, function(err, obj){
-					promise.emit("success", err, obj);
+				.findOne({_id: testContext.docInstance._id}, function(err, objs){
+					promise.emit("success", err, objs);
 				});
 			
 			return promise;
@@ -156,43 +249,12 @@ vows.describe("document modeling case 9 ids")
 		'should not return error': function() {
 			assert.isNull(arguments[0]);
 			assert.isObject(arguments[1]);
-		}
-	}
-})
-.addBatch({
-	'count with _id of type string': {
-		topic: function() {
-			var promise = new EventEmitter();
-			
-			testContext.dbfacade.withDocument("Doc")
-				.count({_id: testContext.docInstance._id.toString()}, function(err, c){
-					promise.emit("success", err, c);
-				});
-			
-			return promise;
-		},
-		'should not return error': function() {
-			assert.isNull(arguments[0]);
-			assert.equal(arguments[1], 1);
-		}
-	}
-})
-.addBatch({
-	'count with _id of type ObjectID': {
-		topic: function() {
-			var promise = new EventEmitter();
-			
-			testContext.dbfacade.withDocument("Doc")
-				.count({_id: testContext.docInstance._id}, function(err, c){
-					promise.emit("success", err, c);
-				})
-				.end();
-			
-			return promise;
-		},
-		'should not return error': function() {
-			assert.isNull(arguments[0]);
-			assert.equal(arguments[1], 1);
+			assert.isNotNull(arguments[1]._id);
+			assert.equal(arguments[1].name, "a");
+			assert.equal(arguments[1].type.name, "new value");
+			assert.isArray(arguments[1].type.array);
+			assert.equal(arguments[1].type.array.length, 1);
+			assert.equal(arguments[1].type.array[0], "myValue");
 		}
 	}
 })
