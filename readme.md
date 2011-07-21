@@ -64,8 +64,6 @@ http://github.com/ActiveUnits/mongodm
 * options can be object like { limit: 1, skip: 2, sort: {}, fields: {} }
 * resultsArray is array of JSON objects or null if there was error
 * err is Error object if it happend or null
-
-
 * [Refer to node-mongodb-native for more information](https://github.com/christkv/node-mongodb-native/blob/master/Readme.md)
 * [Or take a look at generic pattern/query/options syntax at mongodb](http://www.mongodb.org/display/DOCS/Querying)
 * [Refer to mongodb syntax about sortOptions](http://www.mongodb.org/display/DOCS/Sorting+and+Natural+Order)
@@ -98,8 +96,6 @@ http://github.com/ActiveUnits/mongodm
 * documentJSON = JSON object to be inserted or array of JSON objects
 * options defaults to { safe: true }
 * docs = Array containing inserted documents
-
-
 * [Refer to MongoDB syntax for documentJSON](http://www.mongodb.org/display/DOCS/Inserting)
 
 #### update ####
@@ -110,8 +106,6 @@ http://github.com/ActiveUnits/mongodm
 * updateJSON is JSON object which will be used to update matching documents
 * options defaults to { safe: true, upsert: false }
 * n = number of updated documents returned by node-mongodb-native
-
-
 * [Refer to mongodb syntax for updateJSON supported modifier operations](http://www.mongodb.org/display/DOCS/Updating)
 
 #### drop ####
@@ -149,6 +143,7 @@ To be able to use Object to Document mapping one should define the document stru
 * documentName is the name of the collection which will be created as well the name of the Document-Object mapping
 * documentDefinition is object describing the Document-Object mapping
 * documentClass is ready made prototype which can be instantiated 
+
 
 
 	db.defineDocument(documentDefinition, [ documentName ], function(err, documentClass) { } )
