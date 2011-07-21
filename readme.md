@@ -2,6 +2,10 @@
 
 http://github.com/ActiveUnits/mongodm
 
+## credits ##
+
+* [christkv](http://github.com/christkv) and [node-mongodb-native](http://github.com/christkv/node-mongodb-native)
+
 ## features ##
 
 * lightweight wrapper over node-mongodb-native
