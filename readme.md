@@ -144,7 +144,7 @@ To be able to use Object to Document mapping one should define the document stru
 * documentDefinition is object describing the Document-Object mapping
 * documentClass is ready made prototype which can be instantiated 
 
-
+or
 
 	db.defineDocument(documentDefinition, [ documentName ], function(err, documentClass) { } )
 
