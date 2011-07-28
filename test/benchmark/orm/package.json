@@ -1,0 +1,14 @@
+{
+  "author": "",
+  "name": "orm",
+  "version": "0.2.10-6-gf869e37",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ActiveUnits/mongodm.git"
+  },
+  "engines": {
+    "node": "v0.4.9"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
