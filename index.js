@@ -17,7 +17,7 @@ chainbuilder.createChain(exports)
 				var _self = this;
 				var dbfacade = this.databaseConnections.get(host+dbname+port);
 				if(dbfacade == null) {
-					var db = new mongo.Db(dbname, new mongo.Server(host, port, {}), {native_parser:true});
+					var db = new mongo.Db(dbname, new mongo.Server(host, port, {}));
 					db.open(function(err, db) {
 						var databaseFacade = (new DatabaseFacade());
 						if(err == null) {
